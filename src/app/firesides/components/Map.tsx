@@ -8,6 +8,7 @@ import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import Navbar from "~/components/navbar"; // Adjust if necessary
 import GeocoderControl from "./GeocoderControl"; // Existing geocoder control (optional)
 import AddressSearch from "./AddressSearch";
+import { MapPinMarker } from "./MapPinMarker";
 
 interface MarkerData {
   position: [number, number];
@@ -45,7 +46,7 @@ export default function Map() {
         />
         {/* Render marker if an address has been searched */}
         {marker && (
-          <Marker position={marker.position}>
+          <Marker icon={MapPinMarker} position={marker.position}>
             <Popup>{marker.displayName}</Popup>
           </Marker>
         )}
