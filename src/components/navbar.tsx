@@ -78,10 +78,10 @@ export default function Navbar() {
             <PopoverTrigger asChild>
               <Button className="ml-auto block">Sign In</Button>
             </PopoverTrigger>
-            <PopoverContent className="w-60">
+            <PopoverContent className="z-50 w-60">
               {providers.map((provider) => (
                 <button
-                  onClick={() => void signIn("google")}
+                  onClick={() => void signIn(provider.title.toLowerCase())}
                   key={provider.title}
                   className="flex w-full justify-between rounded-lg p-4 transition duration-100 ease-in hover:bg-zinc-100"
                 >
@@ -89,7 +89,7 @@ export default function Navbar() {
                     alt={provider.title}
                     src={provider.logo}
                     width={20}
-                    height={10}
+                    height={15}
                   />
                   <p>Sign in with {provider.title}</p>
                 </button>
