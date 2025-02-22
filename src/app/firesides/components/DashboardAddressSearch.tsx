@@ -1,83 +1,61 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useLoadScript, Libraries } from "@react-google-maps/api";
+import type { Autocomplete, PlaceResult } from "@googlemaps/types";
 
-interface Suggestion {
-  display_name: string;
-  lat: string;
-  lon: string;
-}
+const libraries: Libraries = ["places"];
 
 interface AddressSearchProps {
   onSelect: (lat: number, lon: number, displayName: string) => void;
 }
 
 const DashboardAddressSearch: React.FC<AddressSearchProps> = ({ onSelect }) => {
-  const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries,
+  });
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [selectedPlace, setSelectedPlace] = useState("");
 
   useEffect(() => {
-    if (query.length < 3) {
-      setSuggestions([]);
-      return;
-    }
+    if (!isLoaded || !inputRef.current) return;
 
-    setIsLoading(true);
-
-    fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        query,
-      )}`,
-    )
-      .then((res) => res.json())
-      .then((data: Suggestion[]) => {
-        setSuggestions(data);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching suggestions:", err);
-        setIsLoading(false);
+    const autocomplete: Autocomplete =
+      new window.google.maps.places.Autocomplete(inputRef.current, {
+        componentRestrictions: { country: "us" },
+        types: ["geocode"],
+        fields: ["formatted_address", "geometry"],
       });
-  }, [query]);
 
-  const handleSelect = (suggestion: Suggestion) => {
-    setQuery("");
-    setSuggestions([]);
+    autocomplete.addListener("place_changed", () => {
+      const place: PlaceResult = autocomplete.getPlace();
 
-    const lat = parseFloat(suggestion.lat);
-    const lon = parseFloat(suggestion.lon);
-    console.log("DashboardAddressSearch - Selected:", {
-      lat,
-      lon,
-      displayName: suggestion.display_name,
+      if (!place.geometry?.location) {
+        console.error("No geometry available for selected place");
+        return;
+      }
+
+      const address = place.formatted_address ?? "Unknown place";
+      setSelectedPlace(address);
+
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
+      onSelect(lat, lng, address);
     });
-    onSelect(lat, lon, suggestion.display_name);
-  };
+  }, [isLoaded, onSelect]);
+
+  if (!isLoaded) return <div className="mt-2">Loading...</div>;
 
   return (
     <div className="w-full max-w-2xl">
       <input
+        ref={inputRef}
         type="text"
         placeholder="Search for an address..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
         className="w-full rounded-md border p-2"
       />
-      {isLoading && <div className="mt-2">Loading...</div>}
-      {suggestions.length > 0 && (
-        <ul className="mt-2 max-h-48 overflow-y-auto rounded-md border bg-white">
-          {suggestions.map((sug, index) => (
-            <li
-              key={index}
-              className="cursor-pointer border-b p-2 last:border-b-0 hover:bg-gray-100"
-              onClick={() => handleSelect(sug)}
-            >
-              {sug.display_name}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 };
