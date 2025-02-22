@@ -9,7 +9,11 @@ interface Suggestion {
   lon: string;
 }
 
-const AddressSearch: React.FC = () => {
+interface AddressSearchProps {
+  onSelect: (lat: number, lon: number, displayName: string) => void;
+}
+
+const AddressSearch: React.FC<AddressSearchProps> = ({ onSelect }) => {
   const map = useMap();
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -50,6 +54,9 @@ const AddressSearch: React.FC = () => {
     const lat = parseFloat(suggestion.lat);
     const lon = parseFloat(suggestion.lon);
     map.setView([lat, lon], 13);
+
+    // Call the callback to inform parent component about the selection
+    onSelect(lat, lon, suggestion.display_name);
   };
 
   return (
@@ -70,7 +77,7 @@ const AddressSearch: React.FC = () => {
         placeholder="Search for an address..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        style={{ width: "300px", padding: "5px" }}
+        style={{ width: "500px", padding: "5px" }}
       />
       {isLoading && <div>Loading...</div>}
       {suggestions.length > 0 && (
