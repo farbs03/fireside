@@ -1,5 +1,3 @@
-// const position: [number, number] = [34.0549, -118.2451];
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,7 +6,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import Navbar from "~/components/navbar"; // Adjust if necessary
 import DashboardAddressSearch from "./DashboardAddressSearch";
 import { MapPinMarker } from "./MapPinMarker";
-
+import LocationSearch from "./LocationSearch";
 interface MarkerData {
   position: [number, number];
   displayName: string;
@@ -27,6 +25,14 @@ function MapUpdater({ position }: { position: [number, number] }) {
     }
   }, [map, position]);
 
+  return null;
+}
+
+function MapController({ center }: { center: [number, number] }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center);
+  }, [center, map]);
   return null;
 }
 
@@ -55,6 +61,7 @@ export default function Map({ marker }: MapProps) {
         className="h-full flex-grow"
         zoomControl={false}
       >
+        <MapController  center={marker?.position || defaultPosition} />
         <TileLayer
           attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -72,6 +79,30 @@ export default function Map({ marker }: MapProps) {
             </Marker>
           </>
         )}
+       
+        <div style={{
+        position: "absolute",
+        top: 10,
+        left: 0,
+        right: 0,
+        marginInline: "auto",
+        width: "300px",
+        zIndex: 1000,
+        background: "white",
+        padding: "5px",
+        borderRadius: "4px",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+      }}
+      className="border border-black border-3">
+      <LocationSearch 
+        onPlaceSelected={(lat, lng) => {
+              setMarker({
+                position: [lat, lng],
+                displayName: "Selected Location", // Add a default display name
+              });
+            }}
+          />
+        </div>
       </MapContainer>
     </div>
   );
