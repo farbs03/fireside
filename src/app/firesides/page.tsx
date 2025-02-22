@@ -1,8 +1,16 @@
-import { MapContainer, TileLayer } from "react-leaflet";
-export default function Firesides() {
+"use client";
+
+import dynamic from "next/dynamic";
+
+const LazyMap = dynamic(() => import("./components/Map"), {
+  ssr: false,
+  loading: () => <p>Loading...</p>,
+});
+
+export default function Home() {
   return (
-    <MapContainer>
-      <TileLayer url="" />
-    </MapContainer>
+    <main>
+      <LazyMap />
+    </main>
   );
 }
