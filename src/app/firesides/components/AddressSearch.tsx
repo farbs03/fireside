@@ -31,8 +31,8 @@ const AddressSearch: React.FC<AddressSearchProps> = ({ onSelect }) => {
     // Fetch suggestions from Nominatim
     fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        query
-      )}`
+        query,
+      )}`,
     )
       .then((res) => res.json())
       .then((data: Suggestion[]) => {
@@ -64,7 +64,7 @@ const AddressSearch: React.FC<AddressSearchProps> = ({ onSelect }) => {
       style={{
         position: "absolute",
         top: 10,
-        left: 10,
+        left: 700,
         zIndex: 1000,
         background: "white",
         padding: "5px",

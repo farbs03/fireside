@@ -38,7 +38,7 @@ export default function Map() {
         center={defaultPosition}
         zoom={11}
         scrollWheelZoom={true}
-        style={{ height: "1000px", width: "100%" }}
+        style={{ height: "100vh", width: "100%" }}
       >
         <TileLayer
           attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
