@@ -64,7 +64,10 @@ const AddressSearch: React.FC<AddressSearchProps> = ({ onSelect }) => {
       style={{
         position: "absolute",
         top: 10,
-        left: 700,
+        left: 0,
+        right: 0,
+        marginInline: "auto",
+        width: "fit-content",
         zIndex: 1000,
         background: "white",
         padding: "5px",
