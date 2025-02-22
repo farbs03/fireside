@@ -4,10 +4,9 @@
 
 import { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import Navbar from "~/components/navbar"; // Adjust if necessary
-import GeocoderControl from "./GeocoderControl"; // Existing geocoder control (optional)
-import AddressSearch from "./AddressSearch";
+import DashboardAddressSearch from "./DashboardAddressSearch";
 import { MapPinMarker } from "./MapPinMarker";
 
 interface MarkerData {
@@ -15,11 +14,27 @@ interface MarkerData {
   displayName: string;
 }
 
-export default function Map() {
-  const defaultPosition: [number, number] = [34.0549, -118.2451];
-  const [marker, setMarker] = useState<MarkerData | null>(null);
-  
+interface MapProps {
+  marker: MarkerData | null;
+}
+
+function MapUpdater({ position }: { position: [number, number] }) {
+  const map = useMap();
+
   useEffect(() => {
+    if (position) {
+      map.setView(position, 15);
+    }
+  }, [map, position]);
+
+  return null;
+}
+
+export default function Map({ marker }: MapProps) {
+  const defaultPosition: [number, number] = [34.0549, -118.2451];
+
+  useEffect(() => {
+    console.log("Map - Received marker prop:", marker);
     return () => {
       const containers = document.querySelectorAll(".leaflet-container");
       containers.forEach((container) => {
@@ -28,7 +43,7 @@ export default function Map() {
         }
       });
     };
-  }, []);
+  }, [marker]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -46,24 +61,17 @@ export default function Map() {
         />
         {/* Render marker if an address has been searched */}
         {marker && (
-          <Marker
-            icon={MapPinMarker}
-            position={marker.position}
-            draggable={true}
-          >
-            <Popup>{marker.displayName}</Popup>
-          </Marker>
+          <>
+            <MapUpdater position={marker.position} />
+            <Marker
+              icon={MapPinMarker}
+              position={marker.position}
+              draggable={true}
+            >
+              <Popup>{marker.displayName}</Popup>
+            </Marker>
+          </>
         )}
-        {/* Optionally include the basic geocoder control */}
-        <GeocoderControl />
-        {/* Include the new autocomplete search and pass the onSelect callback */}
-        <div className="">
-          <AddressSearch
-            onSelect={(lat, lon, displayName) => {
-              setMarker({ position: [lat, lon], displayName });
-            }}
-          />
-        </div>
       </MapContainer>
     </div>
   );
