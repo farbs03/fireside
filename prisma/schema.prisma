@@ -12,6 +12,7 @@ datasource db {
     // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
     // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
     url      = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
 }
 
 model Post {
@@ -71,4 +72,13 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Location {
+  id        Int      @id @default(autoincrement())
+  lat       Float
+  lng       Float
+  userId    String?  // Optional: Link to a user
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
