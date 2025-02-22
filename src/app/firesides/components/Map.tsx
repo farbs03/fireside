@@ -4,7 +4,8 @@ import { useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
-import Navbar from "~/components/navbar";
+import Navbar from "~/components/navbar"; // Adjust this import if your Navbar path differs
+import GeocoderControl from "./GeocoderControl";
 
 export default function Map() {
   const position: [number, number] = [34.0549, -118.2451];
@@ -39,6 +40,7 @@ export default function Map() {
             A pretty CSS3 popup. <br /> Easily customizable.
           </Popup>
         </Marker>
+        <GeocoderControl />
       </MapContainer>
     </div>
   );
