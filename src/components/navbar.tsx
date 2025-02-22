@@ -25,22 +25,27 @@ export default function Navbar() {
         }
     ]
     return (
-        <div className="grid grid-cols-3 max-w-7xl mx-auto w-full p-4">
-            <div className="flex items-center gap-2">
-                <FlameIcon className="w-6 h-6" />
-                <Link href="/" className="font-bold text-2xl">Fireside</Link>
-            </div>
-            <div>
-                <div className="flex mx-auto w-fit items-center gap-4 bg-white rounded-full drop-shadow-lg py-2 px-4 justify-center">
-                    {navLinks.map((navLink) => (
-                        <Link key={navLink.href} href={navLink.href} className="hover:text-orange-500 transition duration-200 ease-in font-medium">{navLink.title}</Link>
-                    ))}
-                </div>
-            </div>
-            <div className="justify-end">
-                <Button onClick={() => void signIn()}>Sign In</Button>
-            </div>
-            
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-3 p-4">
+        <div className="flex items-center gap-2">
+          <FlameIcon className="h-6 w-6" />
+          <Link href="/" className="text-2xl font-bold">
+            Fireside
+          </Link>
         </div>
-    )
+        <div>
+          <div className="mx-auto flex w-fit items-center justify-center gap-4 rounded-full bg-white px-4 py-2 drop-shadow-lg">
+            {navLinks.map((navLink) => (
+              <Link
+                key={navLink.href}
+                href={navLink.href}
+                className="font-medium transition duration-200 ease-in hover:text-orange-500"
+              >
+                {navLink.title}
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="justify-end"></div>
+      </div>
+    );
 }
