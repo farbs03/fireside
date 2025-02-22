@@ -4,8 +4,9 @@ import { useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
-import Navbar from "~/components/navbar"; // Adjust this import if your Navbar path differs
-import GeocoderControl from "./GeocoderControl";
+import Navbar from "~/components/navbar"; // Adjust if necessary
+import GeocoderControl from "./GeocoderControl"; // Existing geocoder control (optional)
+import AddressSearch from "./AddressSearch"; // New autocomplete search
 
 export default function Map() {
   const position: [number, number] = [34.0549, -118.2451];
@@ -40,7 +41,10 @@ export default function Map() {
             A pretty CSS3 popup. <br /> Easily customizable.
           </Popup>
         </Marker>
+        {/* Optionally include the basic geocoder control */}
         <GeocoderControl />
+        {/* Include the new autocomplete search */}
+        <AddressSearch />
       </MapContainer>
     </div>
   );
