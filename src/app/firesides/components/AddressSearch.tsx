@@ -47,13 +47,13 @@ const AddressSearch: React.FC<AddressSearchProps> = ({ onSelect }) => {
 
   const handleSelect = (suggestion: Suggestion) => {
     // Update the input field and clear suggestions
-    setQuery(suggestion.display_name);
+    setQuery("");
     setSuggestions([]);
 
     // Parse coordinates and pan the map to the selected location
     const lat = parseFloat(suggestion.lat);
     const lon = parseFloat(suggestion.lon);
-    map.setView([lat, lon], 13);
+    map.setView([lat, lon], 20);
 
     // Call the callback to inform parent component about the selection
     onSelect(lat, lon, suggestion.display_name);
