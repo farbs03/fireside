@@ -50,12 +50,13 @@ function RoutingMachine({ start, end }: { start: L.LatLng; end: L.LatLng }) {
   useEffect(() => {
     if (!map) return;
 
-    // Calculate intermediate points to go around the polygon
+    console.log("Creating route from", start, "to", end); // Debug log
+
     const northOffset = 0.02; // About 2km north
     const waypoints = [
       start,
       L.latLng(start.lat + northOffset, start.lng), // Go north
-      L.latLng(start.lat + northOffset, end.lng), // Go east (above polygon)
+      L.latLng(end.lat + northOffset, end.lng), // Go east (above polygon)
       end,
     ];
 
@@ -65,10 +66,15 @@ function RoutingMachine({ start, end }: { start: L.LatLng; end: L.LatLng }) {
       lineOptions: {
         styles: [{ color: "#6366F1", weight: 4 }],
       },
-      show: false,
+      show: true, // Changed to true
+      showAlternatives: false,
+      fitSelectedRoutes: true,
       addWaypoints: false,
       draggableWaypoints: false,
     }).addTo(map);
+
+    // Force route calculation
+    routingControl.route();
 
     return () => {
       map.removeControl(routingControl);
@@ -86,6 +92,8 @@ export default function Map({ marker }: MapProps) {
     "satellite",
   );
   const [showRouting, setShowRouting] = useState(false);
+  const fixedStart = L.latLng(34.0522, -118.2637); // West of the polygon
+  const [selectedEnd, setSelectedEnd] = useState<L.LatLng | null>(null);
 
   // Define LA downtown area polygon coordinates
   const laBounds = [
@@ -120,12 +128,19 @@ export default function Map({ marker }: MapProps) {
         >
           Switch to {mapStyle === "satellite" ? "Roadmap" : "Satellite"}
         </button>
-        <button
-          className="rounded bg-white px-4 py-2 shadow-md"
-          onClick={() => setShowRouting((prev) => !prev)}
-        >
-          {showRouting ? "Hide" : "Show"} Route
-        </button>
+        {selectedEnd && (
+          <button
+            className="rounded bg-white px-4 py-2 shadow-md"
+            onClick={() => {
+              setShowRouting((prev) => !prev);
+              if (!showRouting) {
+                setSelectedEnd(null);
+              }
+            }}
+          >
+            {showRouting ? "Hide" : "Show"} Route
+          </button>
+        )}
       </div>
       <MapContainer
         id="map"
@@ -158,13 +173,12 @@ export default function Map({ marker }: MapProps) {
         >
           <Popup>Downtown LA Area</Popup>
         </Polygon>
-        {showRouting && (
-          <RoutingMachine
-            start={L.latLng(34.0522, -118.2637)} // Example start point
-            end={L.latLng(34.0522, -118.2237)} // Example end point
-          />
+        <Marker icon={FiresideOwnerMarker} position={fixedStart}>
+          <Popup>Starting Point</Popup>
+        </Marker>
+        {showRouting && selectedEnd && (
+          <RoutingMachine start={fixedStart} end={selectedEnd} />
         )}
-        {/* Render marker if an address has been searched */}
         {marker && (
           <>
             <MapUpdater position={marker.position} />
@@ -172,24 +186,35 @@ export default function Map({ marker }: MapProps) {
               icon={FiresideOwnerMarker}
               position={marker.position}
               draggable={true}
+              eventHandlers={{
+                click: () => {
+                  setSelectedEnd(
+                    L.latLng(marker.position[0], marker.position[1]),
+                  );
+                },
+              }}
             >
               <Popup>{marker.displayName}</Popup>
             </Marker>
           </>
         )}
         {firesides?.map((fireside) => (
-          <button key={fireside.displayName} onClick={() => console.log("Hi")}>
-            <Marker
-              icon={
-                sessionData?.user.id === fireside.creatorId
-                  ? FiresideOwnerMarker
-                  : OtherFiresideMarker
-              }
-              position={{ lat: fireside.lat, lng: fireside.lng }}
-            >
-              <Popup>{fireside.displayName}</Popup>
-            </Marker>
-          </button>
+          <Marker
+            key={fireside.displayName}
+            icon={
+              sessionData?.user.id === fireside.creatorId
+                ? FiresideOwnerMarker
+                : OtherFiresideMarker
+            }
+            position={{ lat: fireside.lat, lng: fireside.lng }}
+            eventHandlers={{
+              click: () => {
+                setSelectedEnd(L.latLng(fireside.lat, fireside.lng));
+              },
+            }}
+          >
+            <Popup>{fireside.displayName}</Popup>
+          </Marker>
         ))}
       </MapContainer>
     </div>
