@@ -1,17 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-import Navbar from "~/components/navbar"; // Adjust if necessary
-import DashboardAddressSearch from "./DashboardAddressSearch";
 import { MapPinMarker } from "./MapPinMarker";
-import LocationSearch from "./LocationSearch";
-
-interface MarkerData {
-  position: [number, number];
-  displayName: string;
-}
+import { api } from "~/trpc/react";
 
 interface MapProps {
   marker: MarkerData | null;
@@ -40,6 +33,8 @@ function MapController({ center }: { center: [number, number] }) {
 
 export default function Map({ marker }: MapProps) {
   const defaultPosition: [number, number] = [34.0549, -118.2451];
+  const getAllFiresides = api.fireside.getAll.useQuery();
+  const { data: firesides, refetch } = api.fireside.getAll.useQuery();
 
   useEffect(() => {
     console.log("Map - Received marker prop:", marker);
@@ -59,11 +54,10 @@ export default function Map({ marker }: MapProps) {
         id="map"
         center={!marker ? defaultPosition : marker.position}
         zoom={11}
-        scrollWheelZoom={true}
         className="h-full flex-grow"
         zoomControl={false}
       >
-        <MapController center={marker?.position || defaultPosition} />
+        <MapController center={marker?.position ?? defaultPosition} />
         <TileLayer
           attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -81,8 +75,16 @@ export default function Map({ marker }: MapProps) {
             </Marker>
           </>
         )}
-
-  
+        {firesides?.map((fireside) => (
+          <button key={fireside.displayName} onClick={() => console.log("Hi")}>
+            <Marker
+              icon={MapPinMarker}
+              position={{ lat: fireside.lat, lng: fireside.lng }}
+            >
+              <Popup>{fireside.displayName}</Popup>
+            </Marker>
+          </button>
+        ))}
       </MapContainer>
     </div>
   );

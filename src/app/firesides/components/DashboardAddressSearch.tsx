@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useLoadScript, Libraries } from "@react-google-maps/api";
+import { useLoadScript, type Libraries } from "@react-google-maps/api";
 import type { Autocomplete, PlaceResult } from "@googlemaps/types";
 
 const libraries: Libraries = ["places"];
@@ -12,7 +12,7 @@ interface AddressSearchProps {
 
 const DashboardAddressSearch: React.FC<AddressSearchProps> = ({ onSelect }) => {
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "",
     libraries,
   });
 
