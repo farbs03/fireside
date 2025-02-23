@@ -95,7 +95,7 @@ export default async function Home() {
             <h2 className="mb-12 text-center text-3xl font-bold">
               Life-Saving Features
             </h2>
-            <div className="mx-auto grid w-full max-w-7xl gap-8 md:grid-cols-2 lg:grid-cols-2">
+            <div className="mx-auto grid w-full max-w-7xl gap-8 md:grid-cols-1 lg:grid-cols-3">
               <FeatureCard
                 icon={<Route className="h-6 w-6" />}
                 title="Safe Route Planning"
@@ -105,11 +105,6 @@ export default async function Home() {
                 icon={<MapPin className="h-6 w-6" />}
                 title="Fireside Locations"
                 description="Find nearby emergency shelters, food banks, and safe zones"
-              />
-              <FeatureCard
-                icon={<Navigation className="h-6 w-6" />}
-                title="Smart Navigation"
-                description="Dynamic route planning that adapts to changing conditions"
               />
               <FeatureCard
                 icon={<Users className="h-6 w-6" />}
