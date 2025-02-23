@@ -25,7 +25,8 @@ export default function Dashboard({ marker, onAddressSelect }: DashboardProps) {
 
   return (
     <div className="h-full flex-grow bg-zinc-100 p-4">
-      {sessionData?.user.email === "chrisgfarber@gmail.com" ? (
+      {sessionData?.user.email === "chrisgfarber@gmail.com" ||
+      sessionData?.user.email === "vijayvittal23@gmail.com" ? (
         <div className="mb-4">
           <p className="mb-1 text-sm font-semibold">Address</p>
           <DashboardAddressSearch onSelect={onAddressSelect} />
