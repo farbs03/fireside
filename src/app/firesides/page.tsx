@@ -57,8 +57,6 @@ export default function Home() {
             onNearbyFiresidesUpdate={setNearbyFiresides}
             focusPosition={focusPosition}
             mapStyle={mapStyle}
-            selectedEnd={selectedEnd}
-            setSelectedEnd={setSelectedEnd}
           />
         </div>
         <div className="w-full max-w-[400px] flex-grow">

@@ -236,7 +236,7 @@ function RoutingMachine({ start, end }: { start: L.LatLng; end: L.LatLng }) {
     routingControl.route();
 
     return () => {
-      map.removeControl(routingControl);
+      if (map && routingControl) map.removeControl(routingControl);
     };
   }, [map, start, end]);
 
