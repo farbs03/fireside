@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { FiresideOwnerMarker, MapPinMarker } from "./FiresideOwnerMarker";
 import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
 import { OtherFiresideMarker } from "./OtherFiresideMarker";
+import {
+  useLoadScript,
+  GoogleMap,
+  StreetViewPanorama,
+  Polygon,
+} from "@react-google-maps/api";
 
 interface MapProps {
   marker: MarkerData | null;
@@ -34,6 +40,31 @@ function MapController({ center }: { center: [number, number] }) {
 }
 
 export default function Map({ marker }: MapProps) {
+  const [isSatellite, setIsSatellite] = useState(false);
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "",
+  });
+
+  // Add polygon coordinates for circular/jagged area around downtown LA
+  const laPolygon = [
+    { lat: 34.0522, lng: -118.2437 }, // Center point
+    { lat: 34.0622, lng: -118.2537 }, // North-West
+    { lat: 34.0672, lng: -118.2437 }, // North
+    { lat: 34.0622, lng: -118.2337 }, // North-East
+    { lat: 34.0522, lng: -118.2237 }, // East
+    { lat: 34.0422, lng: -118.2337 }, // South-East
+    { lat: 34.0372, lng: -118.2437 }, // South
+    { lat: 34.0422, lng: -118.2537 }, // South-West
+    { lat: 34.0522, lng: -118.2637 }, // West
+    { lat: 34.0522, lng: -118.2437 }, // Back to start
+  ];
+
+  const mapOptions = {
+    mapTypeId: isSatellite ? "satellite" : "roadmap",
+    mapTypeControl: false,
+  };
+
   const defaultPosition: [number, number] = [34.0549, -118.2451];
   const { data: sessionData } = useSession();
   const { data: firesides, refetch } = api.fireside.getAll.useQuery();
@@ -50,48 +81,36 @@ export default function Map({ marker }: MapProps) {
     };
   }, [marker]);
 
+  if (!isLoaded) return <div>Loading...</div>;
+
   return (
     <div className="flex min-h-screen flex-col">
-      <MapContainer
-        id="map"
-        center={!marker ? defaultPosition : marker.position}
-        zoom={11}
-        className="h-full flex-grow"
-        zoomControl={false}
+      <button
+        onClick={() => setIsSatellite(!isSatellite)}
+        className="absolute right-4 top-4 z-[1000] rounded-md bg-white px-4 py-2 shadow-md"
       >
-        <MapController center={marker?.position ?? defaultPosition} />
-        <TileLayer
-          attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-        />
-        {/* Render marker if an address has been searched */}
-        {marker && (
-          <>
-            <MapUpdater position={marker.position} />
-            <Marker
-              icon={FiresideOwnerMarker}
-              position={marker.position}
-              draggable={true}
-            >
-              <Popup>{marker.displayName}</Popup>
-            </Marker>
-          </>
+        Switch to {isSatellite ? "Map" : "Satellite"} View
+      </button>
+
+      <GoogleMap
+        mapContainerClassName="h-full flex-grow"
+        center={marker?.position ?? { lat: 34.0549, lng: -118.2451 }}
+        zoom={11}
+        options={mapOptions}
+      >
+        {!isSatellite && (
+          <Polygon
+            paths={laPolygon}
+            options={{
+              fillColor: "#FF0000",
+              fillOpacity: 0.2,
+              strokeColor: "#FF0000",
+              strokeOpacity: 1,
+              strokeWeight: 2,
+            }}
+          />
         )}
-        {firesides?.map((fireside) => (
-          <button key={fireside.displayName} onClick={() => console.log("Hi")}>
-            <Marker
-              icon={
-                sessionData?.user.id === fireside.creatorId
-                  ? FiresideOwnerMarker
-                  : OtherFiresideMarker
-              }
-              position={{ lat: fireside.lat, lng: fireside.lng }}
-            >
-              <Popup>{fireside.displayName}</Popup>
-            </Marker>
-          </button>
-        ))}
-      </MapContainer>
+      </GoogleMap>
     </div>
   );
 }
