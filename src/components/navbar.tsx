@@ -45,7 +45,7 @@ export default function Navbar() {
   const { data: sessionData } = useSession();
 
   return (
-    <div className="mx-auto grid w-full max-w-7xl grid-cols-3 items-center p-4">
+    <div className="mx-auto grid w-full grid-cols-3 items-center p-4">
       <div className="flex items-center gap-2">
         <FlameIcon className="h-6 w-6" />
         <Link href="/" className="text-2xl font-bold">

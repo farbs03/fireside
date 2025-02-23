@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Navbar from "~/components/navbar";
 import Dashboard from "./components/Dashboard";
 import { useState } from "react";
+import { set } from "zod";
 
 interface MarkerData {
   position: [number, number];
@@ -27,6 +28,9 @@ export default function Home() {
   const [nearbyFiresides, setNearbyFiresides] = useState<NearbyFireside[]>([]);
   const [focusPosition, setFocusPosition] = useState<[number, number]>();
 
+  const [showRouting, setShowRouting] = useState(false);
+  const [selectedEnd, setSelectedEnd] = useState<L.LatLng | null>(null);
+
   const handleAddressSelect = (
     lat: number,
     lon: number,
@@ -34,6 +38,10 @@ export default function Home() {
   ) => {
     setMarker({ position: [lat, lon], displayName });
   };
+
+  const [mapStyle, setMapStyle] = useState<"satellite" | "roadmap">(
+    "satellite",
+  );
 
   const handleFiresideClick = (lat: number, lng: number) => {
     setFocusPosition([lat, lng]);
@@ -48,14 +56,21 @@ export default function Home() {
             marker={marker}
             onNearbyFiresidesUpdate={setNearbyFiresides}
             focusPosition={focusPosition}
+            mapStyle={mapStyle}
+            selectedEnd={selectedEnd}
+            setSelectedEnd={setSelectedEnd}
           />
         </div>
         <div className="w-full max-w-[400px] flex-grow">
           <Dashboard
+            mapStyle={mapStyle}
+            handleMapStyleChange={(val) => setMapStyle(val)}
             marker={marker}
             onAddressSelect={handleAddressSelect}
             nearbyFiresides={nearbyFiresides}
             onFiresideClick={handleFiresideClick}
+            setShowRouting={setShowRouting}
+            showRouting={showRouting}
           />
         </div>
       </div>

@@ -10,6 +10,7 @@ import { useSession } from "next-auth/react"
 import { OtherFiresideMarker } from "./OtherFiresideMarker"
 import L from "leaflet"
 import "leaflet-routing-machine"
+import { UserLocationIcon } from "./UserLocationIcon";
 
 // Replace the existing routingStyles constant with this enhanced version
 const routingStyles = `
@@ -110,85 +111,97 @@ const routingStyles = `
   .leaflet-routing-container.leaflet-routing-container-hide:hover {
     opacity: 1;
   }
-`
+`;
 
 // Update the MapFocusHandler to be more precise
-function MapFocusHandler({ position }: { position?: [number, number] }) {
-  const map = useMap()
+function MapFocusHandler({
+  position,
+  mapStyle,
+}: {
+  position?: [number, number];
+  mapStyle: "satellite" | "roadmap";
+}) {
+  const map = useMap();
 
   useEffect(() => {
     if (position && map) {
-      console.log("Focusing on position:", position) // Debug log
+      console.log("Focusing on position:", position); // Debug log
       map.setView(position, 17, {
         // Increased zoom level
         animate: true,
         duration: 1,
-      })
+      });
     }
-  }, [position, map])
+  }, [position, map]);
 
-  return null
+  return null;
 }
 
 interface MapProps {
-  marker: MarkerData | null
+  marker: MarkerData | null;
   onNearbyFiresidesUpdate: (
     firesides: Array<{
-      displayName: string
-      distance: number
-      lat: number
-      lng: number
+      displayName: string;
+      distance: number;
+      lat: number;
+      lng: number;
     }>,
-  ) => void
-  focusPosition?: [number, number]
+  ) => void;
+  focusPosition?: [number, number];
+  mapStyle: "satellite" | "roadmap";
 }
 
 // Update MapUpdater to handle position changes more reliably
 function MapUpdater({ position }: { position: [number, number] }) {
-  const map = useMap()
+  const map = useMap();
 
   useEffect(() => {
     if (position) {
-      console.log("MapUpdater - Moving to position:", position)
+      console.log("MapUpdater - Moving to position:", position);
       // Fly to the new position with animation
       map.flyTo(position, 15, {
         duration: 1.5,
         easeLinearity: 0.25,
-      })
+      });
     }
-  }, [map, position])
+  }, [map, position]);
 
-  return null
+  return null;
 }
 
 function MapController({ center }: { center: [number, number] }) {
-  const map = useMap()
+  const map = useMap();
   useEffect(() => {
-    map.setView(center)
-  }, [center, map])
-  return null
+    map.setView(center);
+  }, [center, map]);
+  return null;
 }
 
 // Custom routing control component
 function RoutingMachine({ start, end }: { start: L.LatLng; end: L.LatLng }) {
-  const map = useMap()
+  const map = useMap();
 
   // Add the custom styles to the document
   useEffect(() => {
-    const styleSheet = document.createElement("style")
-    styleSheet.textContent = routingStyles
-    document.head.appendChild(styleSheet)
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = routingStyles;
+    document.head.appendChild(styleSheet);
 
     return () => {
-      document.head.removeChild(styleSheet)
-    }
-  }, [])
+      document.head.removeChild(styleSheet);
+    };
+  }, []);
 
   useEffect(() => {
-    if (!map) return
+    if (!map) return;
 
     const routingControl = L.Routing.control({
-      waypoints: [start, L.latLng(start.lat + 0.02, start.lng), L.latLng(end.lat + 0.02, end.lng), end],
+      waypoints: [
+        start,
+        L.latLng(start.lat + 0.02, start.lng),
+        L.latLng(end.lat + 0.02, end.lng),
+        end,
+      ],
       routeWhileDragging: false,
       lineOptions: {
         styles: [
@@ -214,26 +227,30 @@ function RoutingMachine({ start, end }: { start: L.LatLng; end: L.LatLng }) {
         units: "imperial",
         roundingSensitivity: 1,
       }),
-    }).addTo(map)
+    }).addTo(map);
 
-    routingControl.route()
+    routingControl.route();
 
     return () => {
-      map.removeControl(routingControl)
-    }
-  }, [map, start, end])
+      map.removeControl(routingControl);
+    };
+  }, [map, start, end]);
 
-  return null
+  return null;
 }
 
-export default function Map({ marker, onNearbyFiresidesUpdate, focusPosition }: MapProps) {
-  const defaultPosition: [number, number] = [34.0522, -118.2437]
-  const fixedStart = L.latLng(34.0522, -118.2637) // West of the polygon
-  const [selectedEnd, setSelectedEnd] = useState<L.LatLng | null>(null)
-  const [mapStyle, setMapStyle] = useState<"satellite" | "roadmap">("satellite")
-  const [showRouting, setShowRouting] = useState(false)
-  const { data: sessionData } = useSession()
-  const { data: firesides, refetch } = api.fireside.getAll.useQuery()
+export default function Map({
+  marker,
+  onNearbyFiresidesUpdate,
+  focusPosition,
+  mapStyle,
+}: MapProps) {
+  const defaultPosition: [number, number] = [34.0522, -118.2437];
+  const fixedStart = L.latLng(34.0522, -118.2637); // West of the polygon
+  const [selectedEnd, setSelectedEnd] = useState<L.LatLng | null>(null);
+  const [showRouting, setShowRouting] = useState(false);
+  const { data: sessionData } = useSession();
+  const { data: firesides, refetch } = api.fireside.getAll.useQuery();
 
   // Define a more organic, fire-like polygon shape
   const laBounds = [
@@ -256,12 +273,12 @@ export default function Map({ marker, onNearbyFiresidesUpdate, focusPosition }: 
     [34.0495, -118.2455],
     [34.051, -118.2445],
     [34.0522, -118.2437], // Close the polygon
-  ]
+  ];
 
   // Debug log for marker updates
   useEffect(() => {
-    console.log("Map component - Marker updated:", marker)
-  }, [marker])
+    console.log("Map component - Marker updated:", marker);
+  }, [marker]);
 
   // Calculate distances from fixed starting point
   useEffect(() => {
@@ -269,66 +286,63 @@ export default function Map({ marker, onNearbyFiresidesUpdate, focusPosition }: 
       const nearbyFiresides = firesides
         .map((fireside) => {
           // Calculate distance using Haversine formula
-          const R = 6371 // Earth's radius in km
-          const lat1 = (fixedStart.lat * Math.PI) / 180
-          const lat2 = (fireside.lat * Math.PI) / 180
-          const dLat = ((fireside.lat - fixedStart.lat) * Math.PI) / 180
-          const dLon = ((fireside.lng - fixedStart.lng) * Math.PI) / 180
+          const R = 6371; // Earth's radius in km
+          const lat1 = (fixedStart.lat * Math.PI) / 180;
+          const lat2 = (fireside.lat * Math.PI) / 180;
+          const dLat = ((fireside.lat - fixedStart.lat) * Math.PI) / 180;
+          const dLon = ((fireside.lng - fixedStart.lng) * Math.PI) / 180;
 
           const a =
             Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
+            Math.cos(lat1) *
+              Math.cos(lat2) *
+              Math.sin(dLon / 2) *
+              Math.sin(dLon / 2);
 
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-          const distance = R * c
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = R * c;
 
           return {
             displayName: fireside.displayName,
             distance,
             lat: fireside.lat,
             lng: fireside.lng,
-          }
+          };
         })
         .sort((a, b) => a.distance - b.distance)
-        .slice(0, 5)
+        .slice(0, 5);
 
-      onNearbyFiresidesUpdate(nearbyFiresides)
+      onNearbyFiresidesUpdate(nearbyFiresides);
     }
-  }, [firesides, onNearbyFiresidesUpdate])
+  }, [firesides, onNearbyFiresidesUpdate]);
 
   // Cleanup function to prevent map initialization issues
   useEffect(() => {
     return () => {
-      const containers = document.querySelectorAll(".leaflet-container")
+      const containers = document.querySelectorAll(".leaflet-container");
       containers.forEach((container) => {
         if ((container as any)._leaflet_id) {
-          ;(container as any)._leaflet_id = null
+          (container as any)._leaflet_id = null;
         }
-      })
-    }
-  }, [])
+      });
+    };
+  }, []);
 
   // Add debug logging for focusPosition changes
   useEffect(() => {
-    console.log("Focus position updated:", focusPosition)
-  }, [focusPosition])
+    console.log("Focus position updated:", focusPosition);
+  }, [focusPosition]);
 
   return (
     <div className="flex min-h-screen flex-col">
       <div className="absolute right-4 top-4 z-[1000] flex flex-col gap-2">
-        <button
-          className="rounded bg-white px-4 py-2 shadow-md"
-          onClick={() => setMapStyle((prev) => (prev === "satellite" ? "roadmap" : "satellite"))}
-        >
-          Switch to {mapStyle === "satellite" ? "Roadmap" : "Satellite"}
-        </button>
         {selectedEnd && (
           <button
             className="rounded bg-white px-4 py-2 shadow-md"
             onClick={() => {
-              setShowRouting((prev) => !prev)
+              setShowRouting((prev) => !prev);
               if (!showRouting) {
-                setSelectedEnd(null)
+                setSelectedEnd(null);
               }
             }}
           >
@@ -371,10 +385,12 @@ export default function Map({ marker, onNearbyFiresidesUpdate, focusPosition }: 
         >
           <Popup>Wildfire Area</Popup>
         </Polygon>
-        <Marker icon={FiresideOwnerMarker} position={fixedStart}>
+        <Marker icon={UserLocationIcon} position={fixedStart}>
           <Popup>Starting Point</Popup>
         </Marker>
-        {showRouting && selectedEnd && <RoutingMachine start={fixedStart} end={selectedEnd} />}
+        {showRouting && selectedEnd && (
+          <RoutingMachine start={fixedStart} end={selectedEnd} />
+        )}
         {marker && (
           <Marker
             icon={FiresideOwnerMarker}
@@ -382,7 +398,9 @@ export default function Map({ marker, onNearbyFiresidesUpdate, focusPosition }: 
             draggable={true}
             eventHandlers={{
               click: () => {
-                setSelectedEnd(L.latLng(marker.position[0], marker.position[1]))
+                setSelectedEnd(
+                  L.latLng(marker.position[0], marker.position[1]),
+                );
               },
             }}
           >
@@ -392,11 +410,15 @@ export default function Map({ marker, onNearbyFiresidesUpdate, focusPosition }: 
         {firesides?.map((fireside) => (
           <Marker
             key={fireside.displayName}
-            icon={sessionData?.user.id === fireside.creatorId ? FiresideOwnerMarker : OtherFiresideMarker}
+            icon={
+              sessionData?.user.id === fireside.creatorId
+                ? FiresideOwnerMarker
+                : OtherFiresideMarker
+            }
             position={{ lat: fireside.lat, lng: fireside.lng }}
             eventHandlers={{
               click: () => {
-                setSelectedEnd(L.latLng(fireside.lat, fireside.lng))
+                setSelectedEnd(L.latLng(fireside.lat, fireside.lng));
               },
             }}
           >
@@ -405,6 +427,6 @@ export default function Map({ marker, onNearbyFiresidesUpdate, focusPosition }: 
         ))}
       </MapContainer>
     </div>
-  )
+  );
 }
 
