@@ -133,9 +133,9 @@ export default function Dashboard({
   };
 
   return (
-    <div className="max-h-50vh flex h-full flex-col overflow-auto bg-zinc-50 p-4">
+    <div className="flex h-full max-h-[90vh] flex-col overflow-auto bg-zinc-50 p-4">
       <button
-        className="mb-4 rounded bg-white px-4 py-2 shadow-md"
+        className="mb-4 rounded border bg-white px-4 py-2 shadow-md"
         onClick={() =>
           handleMapStyleChange(
             mapStyle === "satellite" ? "roadmap" : "satellite",
@@ -147,30 +147,34 @@ export default function Dashboard({
       {/* Admin section for adding firesides */}
       {sessionData?.user.email === "chrisgfarber@gmail.com" ||
       sessionData?.user.email === "vijayvittal23@gmail.com" ? (
-        <div className="mb-6 rounded-lg bg-white p-4 shadow-sm">
-          <h3 className="mb-3 text-lg font-semibold">Add New Fireside</h3>
-          <div className="space-y-4">
-            <div>
-              <p className="mb-2 text-sm font-medium text-gray-700">Address</p>
-              <DashboardAddressSearch onSelect={onAddressSelect} />
-            </div>
-            {!marker ? (
-              <p className="text-sm text-zinc-500">No address selected</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <p className="text-sm text-zinc-700">
-                  Selected: {marker.displayName}
+        <>
+          <div className="mb-6 rounded-lg bg-white p-4 shadow-md">
+            <h3 className="mb-3 text-lg font-semibold">Add New Fireside</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="mb-2 text-sm font-medium text-gray-700">
+                  Address
                 </p>
-                <Button onClick={handleAddFireside}>Confirm Location</Button>
+                <DashboardAddressSearch onSelect={onAddressSelect} />
               </div>
-            )}
+              {!marker ? (
+                <p className="text-sm text-zinc-500">No address selected</p>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <p className="text-sm text-zinc-700">
+                    Selected: {marker.displayName}
+                  </p>
+                  <Button onClick={handleAddFireside}>Confirm Location</Button>
+                </div>
+              )}
+            </div>
           </div>
           <div>
             {userFiresides?.map((fireside: Fireside) => (
               <UpdateFireside key={fireside.id} fireside={fireside} />
             ))}
           </div>
-        </div>
+        </>
       ) : (
         <div className="flex-1">
           <div className="mb-4 flex items-center justify-between">
@@ -235,7 +239,7 @@ export default function Dashboard({
       )}
 
       {/* Community Alert System */}
-      <div className="mt-4 rounded-lg bg-white p-4 shadow-sm">
+      <div className="mt-4 rounded-lg border bg-white p-4 shadow-md">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">
             Community Alerts

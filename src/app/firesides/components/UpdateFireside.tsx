@@ -27,8 +27,9 @@ const UpdateFireside: React.FC<Props> = ({ fireside }) => {
   };
 
   return (
-    <div className="p-4 border rounded-lg shadow-md w-full">
-      <h2 className="font-semibold mb-2">Update Fireside <span className="font-normal">{fireside.displayName}</span></h2>
+    <div className="w-full rounded-lg border p-4 shadow-md">
+      <h2 className="font-semibold">Update Fireside</h2>
+      <p className="mb-2 font-normal">{fireside.displayName}</p>
       <div className="space-y-2">
         <div className="flex items-center gap-1">
           <Droplet className="h-4 w-4 text-blue-500" />
@@ -70,11 +71,16 @@ const UpdateFireside: React.FC<Props> = ({ fireside }) => {
             placeholder="Capacity"
           />
         </div>
-        <Button onClick={handleSubmit}>
-          {"Confirm"}
-        </Button>
+        <div className="flex w-full items-center justify-between">
+          <Button className="w-full" onClick={handleSubmit}>
+            {updateFireside.status === "pending" ? "Loading..." : "Confirm"}
+          </Button>
+          {/* <Button className="bg-red-500/50 text-red-700 transition duration-200 ease-in hover:bg-red-500/60">
+            Delete
+          </Button> */}
         </div>
       </div>
+    </div>
   );
 };
 
