@@ -3,8 +3,10 @@
 import { useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-import { MapPinMarker } from "./MapPinMarker";
+import { FiresideOwnerMarker, MapPinMarker } from "./FiresideOwnerMarker";
 import { api } from "~/trpc/react";
+import { useSession } from "next-auth/react";
+import { OtherFiresideMarker } from "./OtherFiresideMarker";
 
 interface MapProps {
   marker: MarkerData | null;
@@ -33,7 +35,7 @@ function MapController({ center }: { center: [number, number] }) {
 
 export default function Map({ marker }: MapProps) {
   const defaultPosition: [number, number] = [34.0549, -118.2451];
-  const getAllFiresides = api.fireside.getAll.useQuery();
+  const { data: sessionData } = useSession();
   const { data: firesides, refetch } = api.fireside.getAll.useQuery();
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function Map({ marker }: MapProps) {
           <>
             <MapUpdater position={marker.position} />
             <Marker
-              icon={MapPinMarker}
+              icon={FiresideOwnerMarker}
               position={marker.position}
               draggable={true}
             >
@@ -78,7 +80,11 @@ export default function Map({ marker }: MapProps) {
         {firesides?.map((fireside) => (
           <button key={fireside.displayName} onClick={() => console.log("Hi")}>
             <Marker
-              icon={MapPinMarker}
+              icon={
+                sessionData?.user.id === fireside.creatorId
+                  ? FiresideOwnerMarker
+                  : OtherFiresideMarker
+              }
               position={{ lat: fireside.lat, lng: fireside.lng }}
             >
               <Popup>{fireside.displayName}</Popup>
