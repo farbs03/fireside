@@ -25,6 +25,7 @@ const LazyMap = dynamic(() => import("./components/Map"), {
 export default function Home() {
   const [marker, setMarker] = useState<MarkerData | null>(null);
   const [nearbyFiresides, setNearbyFiresides] = useState<NearbyFireside[]>([]);
+  const [focusPosition, setFocusPosition] = useState<[number, number]>();
 
   const handleAddressSelect = (
     lat: number,
@@ -32,6 +33,10 @@ export default function Home() {
     displayName: string,
   ) => {
     setMarker({ position: [lat, lon], displayName });
+  };
+
+  const handleFiresideClick = (lat: number, lng: number) => {
+    setFocusPosition([lat, lng]);
   };
 
   return (
@@ -42,6 +47,7 @@ export default function Home() {
           <LazyMap
             marker={marker}
             onNearbyFiresidesUpdate={setNearbyFiresides}
+            focusPosition={focusPosition}
           />
         </div>
         <div className="w-full max-w-[300px] flex-grow">
@@ -49,6 +55,7 @@ export default function Home() {
             marker={marker}
             onAddressSelect={handleAddressSelect}
             nearbyFiresides={nearbyFiresides}
+            onFiresideClick={handleFiresideClick}
           />
         </div>
       </div>

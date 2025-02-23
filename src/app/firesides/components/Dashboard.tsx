@@ -13,12 +13,14 @@ interface DashboardProps {
     lat: number;
     lng: number;
   }>;
+  onFiresideClick: (lat: number, lng: number) => void;
 }
 
 export default function Dashboard({
   marker,
   onAddressSelect,
   nearbyFiresides,
+  onFiresideClick,
 }: DashboardProps) {
   const addFireside = api.fireside.create.useMutation();
   const { data: sessionData } = useSession();
@@ -55,20 +57,21 @@ export default function Dashboard({
         <div>Not authorized to add a fireside</div>
       )}
 
-      {/* Nearby Firesides Section - Always visible */}
+      {/* Updated Nearby Firesides Section */}
       <div className="mt-6">
         <h3 className="mb-2 text-lg font-semibold">Closest Firesides</h3>
         <div className="flex flex-col gap-2">
           {nearbyFiresides.map((fireside, index) => (
-            <div
+            <button
               key={index}
-              className="rounded-lg bg-white p-3 shadow-sm hover:bg-gray-50"
+              className="cursor-pointer rounded-lg bg-white p-3 text-left shadow-sm transition-colors hover:bg-gray-50"
+              onClick={() => onFiresideClick(fireside.lat, fireside.lng)}
             >
               <p className="font-medium">{fireside.displayName}</p>
               <p className="text-sm text-gray-500">
                 {fireside.distance.toFixed(2)} km from starting point
               </p>
-            </div>
+            </button>
           ))}
         </div>
       </div>

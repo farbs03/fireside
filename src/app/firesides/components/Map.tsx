@@ -18,6 +18,24 @@ import { OtherFiresideMarker } from "./OtherFiresideMarker";
 import L from "leaflet";
 import "leaflet-routing-machine";
 
+// Update the MapFocusHandler to be more precise
+function MapFocusHandler({ position }: { position?: [number, number] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (position && map) {
+      console.log("Focusing on position:", position); // Debug log
+      map.setView(position, 17, {
+        // Increased zoom level
+        animate: true,
+        duration: 1,
+      });
+    }
+  }, [position, map]);
+
+  return null;
+}
+
 interface MapProps {
   marker: MarkerData | null;
   onNearbyFiresidesUpdate: (
@@ -28,6 +46,7 @@ interface MapProps {
       lng: number;
     }>,
   ) => void;
+  focusPosition?: [number, number];
 }
 
 // Update MapUpdater to handle position changes more reliably
@@ -97,16 +116,20 @@ function RoutingMachine({ start, end }: { start: L.LatLng; end: L.LatLng }) {
   return null;
 }
 
-export default function Map({ marker, onNearbyFiresidesUpdate }: MapProps) {
+export default function Map({
+  marker,
+  onNearbyFiresidesUpdate,
+  focusPosition,
+}: MapProps) {
   const defaultPosition: [number, number] = [34.0522, -118.2437];
-  const { data: sessionData } = useSession();
-  const { data: firesides, refetch } = api.fireside.getAll.useQuery();
+  const fixedStart = L.latLng(34.0522, -118.2637); // West of the polygon
+  const [selectedEnd, setSelectedEnd] = useState<L.LatLng | null>(null);
   const [mapStyle, setMapStyle] = useState<"satellite" | "roadmap">(
     "satellite",
   );
   const [showRouting, setShowRouting] = useState(false);
-  const fixedStart = L.latLng(34.0522, -118.2637); // West of the polygon
-  const [selectedEnd, setSelectedEnd] = useState<L.LatLng | null>(null);
+  const { data: sessionData } = useSession();
+  const { data: firesides, refetch } = api.fireside.getAll.useQuery();
 
   // Define LA downtown area polygon coordinates
   const laBounds = [
@@ -169,6 +192,11 @@ export default function Map({ marker, onNearbyFiresidesUpdate }: MapProps) {
     };
   }, []);
 
+  // Add debug logging for focusPosition changes
+  useEffect(() => {
+    console.log("Focus position updated:", focusPosition);
+  }, [focusPosition]);
+
   return (
     <div className="flex min-h-screen flex-col">
       <div className="absolute right-4 top-4 z-[1000] flex flex-col gap-2">
@@ -204,19 +232,21 @@ export default function Map({ marker, onNearbyFiresidesUpdate }: MapProps) {
         zoomControl={false}
         dragging={true}
       >
+        {focusPosition && <MapFocusHandler position={focusPosition} />}
         {marker && <MapUpdater position={marker.position} />}
         <MapController center={marker?.position ?? defaultPosition} />
-        {mapStyle === "satellite" ? (
-          <TileLayer
-            attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-          />
-        ) : (
-          <TileLayer
-            attribution="&copy; Google Maps"
-            url={`https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
-          />
-        )}
+        <TileLayer
+          attribution={
+            mapStyle === "satellite"
+              ? "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+              : "&copy; Google Maps"
+          }
+          url={
+            mapStyle === "satellite"
+              ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              : `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+          }
+        />
         <Polygon
           positions={laBounds}
           pathOptions={{
