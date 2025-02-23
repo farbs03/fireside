@@ -1,148 +1,267 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import "leaflet/dist/leaflet.css";
-import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
-import {
-  MapContainer,
-  Marker,
-  Popup,
-  TileLayer,
-  useMap,
-  Polygon,
-} from "react-leaflet";
-import { FiresideOwnerMarker } from "./FiresideOwnerMarker";
-import { api } from "~/trpc/react";
-import { useSession } from "next-auth/react";
-import { OtherFiresideMarker } from "./OtherFiresideMarker";
-import L from "leaflet";
-import "leaflet-routing-machine";
+import { useEffect, useState } from "react"
+import "leaflet/dist/leaflet.css"
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css"
+import { MapContainer, Marker, Popup, TileLayer, useMap, Polygon } from "react-leaflet"
+import { FiresideOwnerMarker } from "./FiresideOwnerMarker"
+import { api } from "~/trpc/react"
+import { useSession } from "next-auth/react"
+import { OtherFiresideMarker } from "./OtherFiresideMarker"
+import L from "leaflet"
+import "leaflet-routing-machine"
+
+// Replace the existing routingStyles constant with this enhanced version
+const routingStyles = `
+  .leaflet-routing-container {
+    background-color: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    margin: 16px;
+    max-width: 350px;
+    max-height: 500px;
+    overflow-y: auto;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .leaflet-routing-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .leaflet-routing-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  .leaflet-routing-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+  }
+
+  .leaflet-routing-container h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #111827;
+  }
+
+  .leaflet-routing-alt {
+    max-height: none !important;
+    color: #374151;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .leaflet-routing-alt tr {
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .leaflet-routing-alt tr:last-child {
+    border-bottom: none;
+  }
+
+  .leaflet-routing-alt tr:hover {
+    background-color: #f9fafb;
+    transition: background-color 0.2s ease;
+  }
+
+  .leaflet-routing-icon {
+    background-image: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #6366F1;
+    margin: 6px;
+    position: relative;
+  }
+
+  .leaflet-routing-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    border-radius: 50%;
+  }
+
+  .leaflet-routing-alt-minimized {
+    background-color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .leaflet-routing-alt-minimized:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .leaflet-routing-container.leaflet-routing-container-hide {
+    opacity: 0.95;
+    transition: opacity 0.2s ease;
+  }
+
+  .leaflet-routing-container.leaflet-routing-container-hide:hover {
+    opacity: 1;
+  }
+`
 
 // Update the MapFocusHandler to be more precise
 function MapFocusHandler({ position }: { position?: [number, number] }) {
-  const map = useMap();
+  const map = useMap()
 
   useEffect(() => {
     if (position && map) {
-      console.log("Focusing on position:", position); // Debug log
+      console.log("Focusing on position:", position) // Debug log
       map.setView(position, 17, {
         // Increased zoom level
         animate: true,
         duration: 1,
-      });
+      })
     }
-  }, [position, map]);
+  }, [position, map])
 
-  return null;
+  return null
 }
 
 interface MapProps {
-  marker: MarkerData | null;
+  marker: MarkerData | null
   onNearbyFiresidesUpdate: (
     firesides: Array<{
-      displayName: string;
-      distance: number;
-      lat: number;
-      lng: number;
+      displayName: string
+      distance: number
+      lat: number
+      lng: number
     }>,
-  ) => void;
-  focusPosition?: [number, number];
+  ) => void
+  focusPosition?: [number, number]
 }
 
 // Update MapUpdater to handle position changes more reliably
 function MapUpdater({ position }: { position: [number, number] }) {
-  const map = useMap();
+  const map = useMap()
 
   useEffect(() => {
     if (position) {
-      console.log("MapUpdater - Moving to position:", position);
+      console.log("MapUpdater - Moving to position:", position)
       // Fly to the new position with animation
       map.flyTo(position, 15, {
         duration: 1.5,
         easeLinearity: 0.25,
-      });
+      })
     }
-  }, [map, position]);
+  }, [map, position])
 
-  return null;
+  return null
 }
 
 function MapController({ center }: { center: [number, number] }) {
-  const map = useMap();
+  const map = useMap()
   useEffect(() => {
-    map.setView(center);
-  }, [center, map]);
-  return null;
+    map.setView(center)
+  }, [center, map])
+  return null
 }
 
 // Custom routing control component
 function RoutingMachine({ start, end }: { start: L.LatLng; end: L.LatLng }) {
-  const map = useMap();
+  const map = useMap()
+
+  // Add the custom styles to the document
+  useEffect(() => {
+    const styleSheet = document.createElement("style")
+    styleSheet.textContent = routingStyles
+    document.head.appendChild(styleSheet)
+
+    return () => {
+      document.head.removeChild(styleSheet)
+    }
+  }, [])
 
   useEffect(() => {
-    if (!map) return;
-
-    console.log("Creating route from", start, "to", end); // Debug log
-
-    const northOffset = 0.02; // About 2km north
-    const waypoints = [
-      start,
-      L.latLng(start.lat + northOffset, start.lng), // Go north
-      L.latLng(end.lat + northOffset, end.lng), // Go east (above polygon)
-      end,
-    ];
+    if (!map) return
 
     const routingControl = L.Routing.control({
-      waypoints: waypoints,
+      waypoints: [start, L.latLng(start.lat + 0.02, start.lng), L.latLng(end.lat + 0.02, end.lng), end],
       routeWhileDragging: false,
       lineOptions: {
-        styles: [{ color: "#6366F1", weight: 4 }],
+        styles: [
+          {
+            color: "#6366F1",
+            weight: 4,
+            opacity: 0.7,
+          },
+        ],
       },
-      show: true, // Changed to true
+      show: true,
       showAlternatives: false,
       fitSelectedRoutes: true,
       addWaypoints: false,
       draggableWaypoints: false,
-    }).addTo(map);
+      router: L.Routing.osrmv1({
+        language: "en",
+        formatter: new L.Routing.Formatter({
+          units: "imperial", // Use miles instead of kilometers
+        }),
+      }),
+      formatter: new L.Routing.Formatter({
+        units: "imperial",
+        roundingSensitivity: 1,
+      }),
+    }).addTo(map)
 
-    // Force route calculation
-    routingControl.route();
+    routingControl.route()
 
     return () => {
-      map.removeControl(routingControl);
-    };
-  }, [map, start, end]);
+      map.removeControl(routingControl)
+    }
+  }, [map, start, end])
 
-  return null;
+  return null
 }
 
-export default function Map({
-  marker,
-  onNearbyFiresidesUpdate,
-  focusPosition,
-}: MapProps) {
-  const defaultPosition: [number, number] = [34.0522, -118.2437];
-  const fixedStart = L.latLng(34.0522, -118.2637); // West of the polygon
-  const [selectedEnd, setSelectedEnd] = useState<L.LatLng | null>(null);
-  const [mapStyle, setMapStyle] = useState<"satellite" | "roadmap">(
-    "satellite",
-  );
-  const [showRouting, setShowRouting] = useState(false);
-  const { data: sessionData } = useSession();
-  const { data: firesides, refetch } = api.fireside.getAll.useQuery();
+export default function Map({ marker, onNearbyFiresidesUpdate, focusPosition }: MapProps) {
+  const defaultPosition: [number, number] = [34.0522, -118.2437]
+  const fixedStart = L.latLng(34.0522, -118.2637) // West of the polygon
+  const [selectedEnd, setSelectedEnd] = useState<L.LatLng | null>(null)
+  const [mapStyle, setMapStyle] = useState<"satellite" | "roadmap">("satellite")
+  const [showRouting, setShowRouting] = useState(false)
+  const { data: sessionData } = useSession()
+  const { data: firesides, refetch } = api.fireside.getAll.useQuery()
 
-  // Define LA downtown area polygon coordinates
+  // Define a more organic, fire-like polygon shape
   const laBounds = [
-    [34.0522, -118.2437],
-    [34.0522, -118.2537],
-    [34.0622, -118.2537],
-    [34.0622, -118.2437],
-  ];
+    [34.0522, -118.2437], // Center point
+    [34.0535, -118.246], // Irregular edge
+    [34.0548, -118.2455],
+    [34.0555, -118.247],
+    [34.056, -118.2485],
+    [34.0552, -118.25],
+    [34.0558, -118.2515],
+    [34.0545, -118.2525],
+    [34.0535, -118.2515],
+    [34.0525, -118.253],
+    [34.0515, -118.252],
+    [34.0505, -118.2525],
+    [34.05, -118.251],
+    [34.049, -118.25],
+    [34.0495, -118.2485],
+    [34.0485, -118.247],
+    [34.0495, -118.2455],
+    [34.051, -118.2445],
+    [34.0522, -118.2437], // Close the polygon
+  ]
 
   // Debug log for marker updates
   useEffect(() => {
-    console.log("Map component - Marker updated:", marker);
-  }, [marker]);
+    console.log("Map component - Marker updated:", marker)
+  }, [marker])
 
   // Calculate distances from fixed starting point
   useEffect(() => {
@@ -150,63 +269,56 @@ export default function Map({
       const nearbyFiresides = firesides
         .map((fireside) => {
           // Calculate distance using Haversine formula
-          const R = 6371; // Earth's radius in km
-          const lat1 = (fixedStart.lat * Math.PI) / 180;
-          const lat2 = (fireside.lat * Math.PI) / 180;
-          const dLat = ((fireside.lat - fixedStart.lat) * Math.PI) / 180;
-          const dLon = ((fireside.lng - fixedStart.lng) * Math.PI) / 180;
+          const R = 6371 // Earth's radius in km
+          const lat1 = (fixedStart.lat * Math.PI) / 180
+          const lat2 = (fireside.lat * Math.PI) / 180
+          const dLat = ((fireside.lat - fixedStart.lat) * Math.PI) / 180
+          const dLon = ((fireside.lng - fixedStart.lng) * Math.PI) / 180
 
           const a =
             Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1) *
-              Math.cos(lat2) *
-              Math.sin(dLon / 2) *
-              Math.sin(dLon / 2);
+            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
 
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = R * c;
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+          const distance = R * c
 
           return {
             displayName: fireside.displayName,
             distance,
             lat: fireside.lat,
             lng: fireside.lng,
-          };
+          }
         })
         .sort((a, b) => a.distance - b.distance)
-        .slice(0, 5);
+        .slice(0, 5)
 
-      onNearbyFiresidesUpdate(nearbyFiresides);
+      onNearbyFiresidesUpdate(nearbyFiresides)
     }
-  }, [firesides, onNearbyFiresidesUpdate]);
+  }, [firesides, onNearbyFiresidesUpdate])
 
   // Cleanup function to prevent map initialization issues
   useEffect(() => {
     return () => {
-      const containers = document.querySelectorAll(".leaflet-container");
+      const containers = document.querySelectorAll(".leaflet-container")
       containers.forEach((container) => {
         if ((container as any)._leaflet_id) {
-          (container as any)._leaflet_id = null;
+          ;(container as any)._leaflet_id = null
         }
-      });
-    };
-  }, []);
+      })
+    }
+  }, [])
 
   // Add debug logging for focusPosition changes
   useEffect(() => {
-    console.log("Focus position updated:", focusPosition);
-  }, [focusPosition]);
+    console.log("Focus position updated:", focusPosition)
+  }, [focusPosition])
 
   return (
     <div className="flex min-h-screen flex-col">
       <div className="absolute right-4 top-4 z-[1000] flex flex-col gap-2">
         <button
           className="rounded bg-white px-4 py-2 shadow-md"
-          onClick={() =>
-            setMapStyle((prev) =>
-              prev === "satellite" ? "roadmap" : "satellite",
-            )
-          }
+          onClick={() => setMapStyle((prev) => (prev === "satellite" ? "roadmap" : "satellite"))}
         >
           Switch to {mapStyle === "satellite" ? "Roadmap" : "Satellite"}
         </button>
@@ -214,9 +326,9 @@ export default function Map({
           <button
             className="rounded bg-white px-4 py-2 shadow-md"
             onClick={() => {
-              setShowRouting((prev) => !prev);
+              setShowRouting((prev) => !prev)
               if (!showRouting) {
-                setSelectedEnd(null);
+                setSelectedEnd(null)
               }
             }}
           >
@@ -250,20 +362,19 @@ export default function Map({
         <Polygon
           positions={laBounds}
           pathOptions={{
-            color: "blue",
-            fillColor: "blue",
-            fillOpacity: 0.2,
+            color: "#FF4500", // Orange-red color
+            fillColor: "#FF6347", // Tomato red
+            fillOpacity: 0.3,
             weight: 2,
+            dashArray: "5, 5", // Creates a dashed line effect
           }}
         >
-          <Popup>Downtown LA Area</Popup>
+          <Popup>Wildfire Area</Popup>
         </Polygon>
         <Marker icon={FiresideOwnerMarker} position={fixedStart}>
           <Popup>Starting Point</Popup>
         </Marker>
-        {showRouting && selectedEnd && (
-          <RoutingMachine start={fixedStart} end={selectedEnd} />
-        )}
+        {showRouting && selectedEnd && <RoutingMachine start={fixedStart} end={selectedEnd} />}
         {marker && (
           <Marker
             icon={FiresideOwnerMarker}
@@ -271,9 +382,7 @@ export default function Map({
             draggable={true}
             eventHandlers={{
               click: () => {
-                setSelectedEnd(
-                  L.latLng(marker.position[0], marker.position[1]),
-                );
+                setSelectedEnd(L.latLng(marker.position[0], marker.position[1]))
               },
             }}
           >
@@ -283,15 +392,11 @@ export default function Map({
         {firesides?.map((fireside) => (
           <Marker
             key={fireside.displayName}
-            icon={
-              sessionData?.user.id === fireside.creatorId
-                ? FiresideOwnerMarker
-                : OtherFiresideMarker
-            }
+            icon={sessionData?.user.id === fireside.creatorId ? FiresideOwnerMarker : OtherFiresideMarker}
             position={{ lat: fireside.lat, lng: fireside.lng }}
             eventHandlers={{
               click: () => {
-                setSelectedEnd(L.latLng(fireside.lat, fireside.lng));
+                setSelectedEnd(L.latLng(fireside.lat, fireside.lng))
               },
             }}
           >
@@ -300,5 +405,6 @@ export default function Map({
         ))}
       </MapContainer>
     </div>
-  );
+  )
 }
+
