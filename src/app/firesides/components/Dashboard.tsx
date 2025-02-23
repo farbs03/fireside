@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Plus,
   Ban,
+  Carrot,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import DashboardAddressSearch from "./DashboardAddressSearch";
@@ -219,7 +220,7 @@ export default function Dashboard({
                       <span>{fireside.water}L</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Package className="h-3 w-3 text-orange-500" />
+                      <Carrot className="h-3 w-3 text-orange-500" />
                       <span>{fireside.food}</span>
                     </div>
                     <div className="flex items-center gap-1">

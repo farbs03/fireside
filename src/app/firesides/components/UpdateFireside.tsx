@@ -8,6 +8,7 @@ import {
   Package,
   AmbulanceIcon as FirstAid,
   Users,
+  Carrot,
 } from "lucide-react";
 
 type Props = {
@@ -23,7 +24,13 @@ const UpdateFireside: React.FC<Props> = ({ fireside }) => {
   };
 
   const handleSubmit = () => {
-    updateFireside.mutate({firesideId: values.id, food: values.food, water: values.water, medical: values.medical, capacity: values.capacity});
+    updateFireside.mutate({
+      firesideId: values.id,
+      food: values.food,
+      water: values.water,
+      medical: values.medical,
+      capacity: values.capacity,
+    });
   };
 
   return (
@@ -42,7 +49,7 @@ const UpdateFireside: React.FC<Props> = ({ fireside }) => {
           />
         </div>
         <div className="flex items-center gap-1">
-          <Package className="h-4 w-4 text-orange-500" />
+          <Carrot className="h-4 w-4 text-orange-500" />
           <Input
             type="number"
             name="food"

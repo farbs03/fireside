@@ -1,7 +1,7 @@
 import type React from "react";
 import { HydrateClient } from "~/trpc/server";
 import Navbar from "~/components/navbar";
-import { MapPin, Navigation, Bell, Shield, Users, Route } from "lucide-react";
+import { MapPin, Users, Route } from "lucide-react";
 import Image from "next/image";
 
 function CustomButton({
