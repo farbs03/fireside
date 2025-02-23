@@ -20,15 +20,28 @@ import "leaflet-routing-machine";
 
 interface MapProps {
   marker: MarkerData | null;
+  onNearbyFiresidesUpdate: (
+    firesides: Array<{
+      displayName: string;
+      distance: number;
+      lat: number;
+      lng: number;
+    }>,
+  ) => void;
 }
 
-// This component handles map view updates
+// Update MapUpdater to handle position changes more reliably
 function MapUpdater({ position }: { position: [number, number] }) {
   const map = useMap();
 
   useEffect(() => {
     if (position) {
-      map.setView(position, 15);
+      console.log("MapUpdater - Moving to position:", position);
+      // Fly to the new position with animation
+      map.flyTo(position, 15, {
+        duration: 1.5,
+        easeLinearity: 0.25,
+      });
     }
   }, [map, position]);
 
@@ -84,7 +97,7 @@ function RoutingMachine({ start, end }: { start: L.LatLng; end: L.LatLng }) {
   return null;
 }
 
-export default function Map({ marker }: MapProps) {
+export default function Map({ marker, onNearbyFiresidesUpdate }: MapProps) {
   const defaultPosition: [number, number] = [34.0522, -118.2437];
   const { data: sessionData } = useSession();
   const { data: firesides, refetch } = api.fireside.getAll.useQuery();
@@ -103,8 +116,49 @@ export default function Map({ marker }: MapProps) {
     [34.0622, -118.2437],
   ];
 
+  // Debug log for marker updates
   useEffect(() => {
-    console.log("Map - Received marker prop:", marker);
+    console.log("Map component - Marker updated:", marker);
+  }, [marker]);
+
+  // Calculate distances from fixed starting point
+  useEffect(() => {
+    if (firesides) {
+      const nearbyFiresides = firesides
+        .map((fireside) => {
+          // Calculate distance using Haversine formula
+          const R = 6371; // Earth's radius in km
+          const lat1 = (fixedStart.lat * Math.PI) / 180;
+          const lat2 = (fireside.lat * Math.PI) / 180;
+          const dLat = ((fireside.lat - fixedStart.lat) * Math.PI) / 180;
+          const dLon = ((fireside.lng - fixedStart.lng) * Math.PI) / 180;
+
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1) *
+              Math.cos(lat2) *
+              Math.sin(dLon / 2) *
+              Math.sin(dLon / 2);
+
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = R * c;
+
+          return {
+            displayName: fireside.displayName,
+            distance,
+            lat: fireside.lat,
+            lng: fireside.lng,
+          };
+        })
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 5);
+
+      onNearbyFiresidesUpdate(nearbyFiresides);
+    }
+  }, [firesides, onNearbyFiresidesUpdate]);
+
+  // Cleanup function to prevent map initialization issues
+  useEffect(() => {
     return () => {
       const containers = document.querySelectorAll(".leaflet-container");
       containers.forEach((container) => {
@@ -113,7 +167,7 @@ export default function Map({ marker }: MapProps) {
         }
       });
     };
-  }, [marker]);
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -144,12 +198,13 @@ export default function Map({ marker }: MapProps) {
       </div>
       <MapContainer
         id="map"
-        center={!marker ? defaultPosition : marker.position}
+        center={marker ? marker.position : defaultPosition}
         zoom={13}
         className="h-full flex-grow"
         zoomControl={false}
         dragging={true}
       >
+        {marker && <MapUpdater position={marker.position} />}
         <MapController center={marker?.position ?? defaultPosition} />
         {mapStyle === "satellite" ? (
           <TileLayer
@@ -180,23 +235,20 @@ export default function Map({ marker }: MapProps) {
           <RoutingMachine start={fixedStart} end={selectedEnd} />
         )}
         {marker && (
-          <>
-            <MapUpdater position={marker.position} />
-            <Marker
-              icon={FiresideOwnerMarker}
-              position={marker.position}
-              draggable={true}
-              eventHandlers={{
-                click: () => {
-                  setSelectedEnd(
-                    L.latLng(marker.position[0], marker.position[1]),
-                  );
-                },
-              }}
-            >
-              <Popup>{marker.displayName}</Popup>
-            </Marker>
-          </>
+          <Marker
+            icon={FiresideOwnerMarker}
+            position={marker.position}
+            draggable={true}
+            eventHandlers={{
+              click: () => {
+                setSelectedEnd(
+                  L.latLng(marker.position[0], marker.position[1]),
+                );
+              },
+            }}
+          >
+            <Popup>{marker.displayName}</Popup>
+          </Marker>
         )}
         {firesides?.map((fireside) => (
           <Marker

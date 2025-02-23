@@ -10,6 +10,13 @@ interface MarkerData {
   displayName: string;
 }
 
+interface NearbyFireside {
+  displayName: string;
+  distance: number;
+  lat: number;
+  lng: number;
+}
+
 const LazyMap = dynamic(() => import("./components/Map"), {
   ssr: false,
   loading: () => <p>Loading...</p>,
@@ -17,6 +24,7 @@ const LazyMap = dynamic(() => import("./components/Map"), {
 
 export default function Home() {
   const [marker, setMarker] = useState<MarkerData | null>(null);
+  const [nearbyFiresides, setNearbyFiresides] = useState<NearbyFireside[]>([]);
 
   const handleAddressSelect = (
     lat: number,
@@ -31,10 +39,17 @@ export default function Home() {
       <Navbar />
       <div className="mx-auto flex h-full w-full flex-grow">
         <div className="w-full flex-grow">
-          <LazyMap marker={marker} />
+          <LazyMap
+            marker={marker}
+            onNearbyFiresidesUpdate={setNearbyFiresides}
+          />
         </div>
         <div className="w-full max-w-[300px] flex-grow">
-          <Dashboard marker={marker} onAddressSelect={handleAddressSelect} />
+          <Dashboard
+            marker={marker}
+            onAddressSelect={handleAddressSelect}
+            nearbyFiresides={nearbyFiresides}
+          />
         </div>
       </div>
     </main>
