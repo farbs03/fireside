@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-import { FiresideOwnerMarker, MapPinMarker } from "./FiresideOwnerMarker";
+import { FiresideOwnerMarker } from "./FiresideOwnerMarker";
 import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
 import { OtherFiresideMarker } from "./OtherFiresideMarker";

@@ -51,7 +51,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    firesideIds   String[]    
+    role          String    @default("user")
 }
 
 model VerificationToken {
