@@ -68,6 +68,10 @@ model Fireside {
     lng         Float
     displayName String
     creatorId   String
+    food        Int @default(0)
+    water       Int @default(0)
+    medical     Int @default(0)
+    capacity    Int @default(0)
     volunteerIds   String[]
     availableResources  String[]
     createdAt   DateTime @default(now())

@@ -145,6 +145,10 @@ interface MapProps {
       distance: number;
       lat: number;
       lng: number;
+      water: number;
+      food: number;
+      medical: number;
+      capacity: number;
     }>,
   ) => void;
   focusPosition?: [number, number];
@@ -307,6 +311,10 @@ export default function Map({
             distance,
             lat: fireside.lat,
             lng: fireside.lng,
+            water: fireside.water,
+            food: fireside.food,
+            capacity: fireside.capacity,
+            medical: fireside.medical,
           };
         })
         .sort((a, b) => a.distance - b.distance)
@@ -334,8 +342,11 @@ export default function Map({
   }, [focusPosition]);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="absolute right-4 top-4 z-[1000] flex flex-col gap-2">
+    <div className="relative flex min-h-screen flex-col">
+      <div
+        className="absolute left-0 right-0 top-4 z-[1000] flex w-60 flex-col gap-2"
+        style={{ marginInline: "auto" }}
+      >
         {selectedEnd && (
           <button
             className="rounded bg-white px-4 py-2 shadow-md"

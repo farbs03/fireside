@@ -10,6 +10,39 @@ export const firesideRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.fireside.findMany();
   }),
+
+  getByUser: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.fireside.findMany({
+      where: {
+        creatorId: ctx.session.user.id,
+      },
+    });
+  }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        firesideId: z.number(),
+        food: z.number(),
+        water: z.number(),
+        capacity: z.number(),
+        medical: z.number(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      return ctx.db.fireside.update({
+        where: {
+          id: input.firesideId,
+        },
+        data: {
+          food: input.food,
+          water: input.water,
+          medical: input.medical,
+          capacity: input.capacity,
+        },
+      });
+    }),
+
   create: protectedProcedure
     .input(
       z.object({

@@ -16,6 +16,17 @@ export const userRouter = createTRPCRouter({
         },
       });
     }),
+
+  update: protectedProcedure
+    .input(z.object({ userId: z.string(), firesideId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {},
+      });
+    }),
   updateRole: protectedProcedure
     .input(z.object({ userId: z.string(), role: z.string() }))
     .mutation(async ({ ctx, input }) => {

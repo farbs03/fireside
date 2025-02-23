@@ -18,7 +18,9 @@ import { Button } from "~/components/ui/button";
 import DashboardAddressSearch from "./DashboardAddressSearch";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import UpdateFireside from "./UpdateFireside";
+import { type Fireside } from "@prisma/client";
 
 // Define the MarkerData type
 interface MarkerData {
@@ -66,11 +68,10 @@ export default function Dashboard({
   onFiresideClick,
   mapStyle,
   handleMapStyleChange,
-  showRouting,
-  setShowRouting,
 }: DashboardProps) {
-  const addFireside = api.fireside.create.useMutation();
   const { data: sessionData } = useSession();
+  const addFireside = api.fireside.create.useMutation();
+  const { data: userFiresides } = api.fireside.getByUser.useQuery();
 
   const handleAddFireside = () => {
     if (marker && sessionData?.user && sessionData.user.id) {
@@ -164,6 +165,11 @@ export default function Dashboard({
               </div>
             )}
           </div>
+          <div>
+            {userFiresides?.map((fireside: Fireside) => (
+              <UpdateFireside key={fireside.id} fireside={fireside} />
+            ))}
+          </div>
         </div>
       ) : (
         <div className="flex-1">
@@ -183,7 +189,7 @@ export default function Dashboard({
                 <button
                   key={index}
                   onClick={() => onFiresideClick(fireside.lat, fireside.lng)}
-                  className="w-full cursor-pointer rounded-lg bg-white p-4 text-left shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full cursor-pointer rounded-lg bg-white p-3 text-left shadow-sm transition-all hover:shadow-md"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -202,50 +208,23 @@ export default function Dashboard({
                         <span>{fireside.distance.toFixed(2)} km away</span>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
                   </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-full bg-blue-50 p-2">
-                        <Droplet className="h-4 w-4 text-blue-500" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Water</p>
-                        <p className="font-medium">{supplies.water}L</p>
-                      </div>
+                  <div className="mt-2 grid grid-cols-4 gap-2 text-xs">
+                    <div className="flex items-center gap-1">
+                      <Droplet className="h-3 w-3 text-blue-500" />
+                      <span>{fireside.water}L</span>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-full bg-orange-50 p-2">
-                        <Package className="h-4 w-4 text-orange-500" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Food</p>
-                        <p className="font-medium">{supplies.food} units</p>
-                      </div>
+                    <div className="flex items-center gap-1">
+                      <Package className="h-3 w-3 text-orange-500" />
+                      <span>{fireside.food}</span>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-full bg-red-50 p-2">
-                        <FirstAid className="h-4 w-4 text-red-500" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Medical</p>
-                        <p className="font-medium">{supplies.medical} kits</p>
-                      </div>
+                    <div className="flex items-center gap-1">
+                      <FirstAid className="h-3 w-3 text-red-500" />
+                      <span>{fireside.medical}</span>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-full bg-purple-50 p-2">
-                        <Users className="h-4 w-4 text-purple-500" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Capacity</p>
-                        <p className="font-medium">
-                          {supplies.capacity} people
-                        </p>
-                      </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-3 w-3 text-purple-500" />
+                      <span>{fireside.capacity}</span>
                     </div>
                   </div>
                 </button>
