@@ -2,6 +2,7 @@ import type React from "react";
 import { HydrateClient } from "~/trpc/server";
 import Navbar from "~/components/navbar";
 import { MapPin, Navigation, Bell, Shield, Users, Route } from "lucide-react";
+import Image from "next/image";
 
 function CustomButton({
   size = "default",
@@ -63,17 +64,23 @@ export default async function Home() {
                     size="lg"
                     className="bg-red-600 text-white hover:bg-red-700"
                   >
-                    Find Safe Route Now
-                  </CustomButton>
-                  <CustomButton size="lg" variant="outline">
                     Locate Nearest Fireside
                   </CustomButton>
                 </div>
               </div>
               <div className="rounded-xl border bg-card p-6 shadow-lg">
                 <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                  <Image
+                    alt="world"
+                    src="/world-map.webp"
+                    fill
+                    className="rounded-lg object-cover"
+                  />
                   {/* Map Placeholder */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                  <div
+                    className="absolute inset-0 flex items-center justify-center bg-black/10"
+                    style={{ backgroundImage: "/world-map.webp" }}
+                  >
                     <MapPin className="h-12 w-12 text-red-500" />
                   </div>
                 </div>
@@ -88,7 +95,7 @@ export default async function Home() {
             <h2 className="mb-12 text-center text-3xl font-bold">
               Life-Saving Features
             </h2>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mx-auto grid w-full max-w-7xl gap-8 md:grid-cols-2 lg:grid-cols-2">
               <FeatureCard
                 icon={<Route className="h-6 w-6" />}
                 title="Safe Route Planning"
@@ -98,16 +105,6 @@ export default async function Home() {
                 icon={<MapPin className="h-6 w-6" />}
                 title="Fireside Locations"
                 description="Find nearby emergency shelters, food banks, and safe zones"
-              />
-              <FeatureCard
-                icon={<Bell className="h-6 w-6" />}
-                title="Live Updates"
-                description="Receive instant alerts about wildfires and available resources"
-              />
-              <FeatureCard
-                icon={<Shield className="h-6 w-6" />}
-                title="Emergency Response"
-                description="Access critical safety information when you need it most"
               />
               <FeatureCard
                 icon={<Navigation className="h-6 w-6" />}
@@ -138,14 +135,7 @@ export default async function Home() {
                   variant="secondary"
                   className="bg-white text-red-600 hover:bg-red-50"
                 >
-                  Emergency Evacuation
-                </CustomButton>
-                <CustomButton
-                  size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-red-700"
-                >
-                  View Safe Zones
+                  View Firesides
                 </CustomButton>
               </div>
             </div>
@@ -169,7 +159,7 @@ function FeatureCard({
     <div className="rounded-lg border bg-card p-6 shadow-sm">
       <div className="mb-4 text-red-600">{icon}</div>
       <h3 className="mb-2 font-semibold">{title}</h3>
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <p className="text-muted-foreground">{description}</p>
     </div>
   );
 }
