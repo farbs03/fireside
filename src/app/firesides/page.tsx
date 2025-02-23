@@ -50,7 +50,7 @@ export default function Home() {
             focusPosition={focusPosition}
           />
         </div>
-        <div className="w-full max-w-[300px] flex-grow">
+        <div className="w-full max-w-[400px] flex-grow">
           <Dashboard
             marker={marker}
             onAddressSelect={handleAddressSelect}
