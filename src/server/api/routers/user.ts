@@ -17,6 +17,14 @@ export const userRouter = createTRPCRouter({
       });
     }),
 
+  getCurrent: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.user.findUnique({
+      where: {
+        id: ctx.session.user.id,
+      },
+    });
+  }),
+
   update: protectedProcedure
     .input(z.object({ userId: z.string(), firesideId: z.string() }))
     .query(async ({ ctx, input }) => {

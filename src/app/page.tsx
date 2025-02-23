@@ -55,8 +55,8 @@ export default async function Home() {
                     Find Your Safe Path Through Wildfires
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Fireside helps you locate safe evacuation routes and nearby
-                    emergency shelters during wildfire emergencies.
+                    Fireside helps you locate safe evacuation routes to nearby
+                    safe zones for food, water, and medical needs.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
