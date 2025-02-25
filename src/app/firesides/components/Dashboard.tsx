@@ -23,38 +23,23 @@ import { useEffect, useState } from "react";
 import UpdateFireside from "./UpdateFireside";
 import { type Fireside } from "@prisma/client";
 
-// Define the MarkerData type
-interface MarkerData {
-  position: [number, number];
-  displayName: string;
-}
-
-// Dummy data for supplies
-const getRandomSupplies = () => ({
-  water: Math.floor(Math.random() * 1000) + 100,
-  food: Math.floor(Math.random() * 500) + 50,
-  medical: Math.floor(Math.random() * 100) + 10,
-  capacity: Math.floor(Math.random() * 200) + 50,
-});
-
-interface Alert {
+interface FiresideAlert {
   id: string;
   type: "fire" | "road" | "help";
   title: string;
   description: string;
-  timestamp: Date;
+  timestamp?: Date;
   reporter?: string;
 }
 
 interface DashboardProps {
-  marker: MarkerData | null;
+  marker: MarkerData | undefined;
   onAddressSelect: (lat: number, lon: number, displayName: string) => void;
-  nearbyFiresides: Array<{
-    displayName: string;
-    distance: number;
-    lat: number;
-    lng: number;
-  }>;
+  nearbyFiresides: Array<
+    {
+      distance: number;
+    } & Fireside
+  >;
   onFiresideClick: (lat: number, lng: number) => void;
   handleMapStyleChange: (prev: "satellite" | "roadmap") => void;
   mapStyle: "satellite" | "roadmap";
@@ -73,20 +58,29 @@ export default function Dashboard({
   const { data: sessionData } = useSession();
   const addFireside = api.fireside.create.useMutation();
   const { data: userFiresides } = api.fireside.getByUser.useQuery();
+  const { data: user } = api.user.getCurrent.useQuery();
 
   const handleAddFireside = () => {
     if (marker && sessionData?.user && sessionData.user.id) {
-      addFireside.mutate({
-        creatorId: sessionData?.user.id,
-        displayName: marker?.displayName,
-        lat: marker.position[0],
-        lng: marker.position[1],
-      });
+      console.log(marker);
+      addFireside.mutate(
+        {
+          creatorId: sessionData?.user.id,
+          displayName: marker?.displayName,
+          lat: marker.position[0],
+          lng: marker.position[1],
+        },
+        {
+          onSuccess: () => {
+            console.log("Success!");
+          },
+        },
+      );
     }
   };
 
   // Add this state for alerts
-  const [alerts, setAlerts] = useState<Alert[]>([
+  const [alerts, setAlerts] = useState<FiresideAlert[]>([
     {
       id: "1",
       type: "fire",
@@ -111,15 +105,11 @@ export default function Dashboard({
   ]);
 
   const [isAddingAlert, setIsAddingAlert] = useState(false);
-  const [newAlert, setNewAlert] = useState({
-    type: "fire" as const,
-    title: "",
-    description: "",
-  });
+  const [newAlert, setNewAlert] = useState<FiresideAlert | null>();
 
   const handleAddAlert = () => {
-    if (newAlert.title && newAlert.description) {
-      const alert: Alert = {
+    if (newAlert?.title && newAlert.description) {
+      const alert: FiresideAlert = {
         id: Date.now().toString(),
         type: newAlert.type,
         title: newAlert.title,
@@ -129,7 +119,7 @@ export default function Dashboard({
       };
       setAlerts((prev) => [alert, ...prev]);
       setIsAddingAlert(false);
-      setNewAlert({ type: "fire", title: "", description: "" });
+      setNewAlert(null);
     }
   };
 
@@ -146,8 +136,7 @@ export default function Dashboard({
         Switch to {mapStyle === "satellite" ? "Roadmap" : "Satellite"}
       </button>
       {/* Admin section for adding firesides */}
-      {sessionData?.user.email === "chrisgfarber@gmail.com" ||
-      sessionData?.user.email === "vijayvittal23@gmail.com" ? (
+      {user?.role === "organization" ? (
         <>
           <div className="mb-6 rounded-lg bg-white p-4 shadow-md">
             <h3 className="mb-3 text-lg font-semibold">Add New Fireside</h3>
@@ -189,7 +178,6 @@ export default function Dashboard({
 
           <div className="grid gap-4">
             {nearbyFiresides.map((fireside, index) => {
-              const supplies = getRandomSupplies();
               return (
                 <button
                   key={index}
@@ -257,9 +245,9 @@ export default function Dashboard({
         {isAddingAlert && (
           <div className="mb-4 space-y-3 rounded-md border border-gray-200 p-3">
             <select
-              value={newAlert.type}
+              value={newAlert?.type}
               onChange={(e) =>
-                setNewAlert((prev) => ({
+                setNewAlert((prev: FiresideAlert | null) => ({
                   ...prev,
                   type: e.target.value as "fire" | "road" | "help",
                 }))

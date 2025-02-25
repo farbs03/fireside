@@ -3,8 +3,8 @@
 import dynamic from "next/dynamic";
 import Navbar from "~/components/navbar";
 import Dashboard from "./components/Dashboard";
-import { useState } from "react";
-import { set } from "zod";
+import { useEffect, useState } from "react";
+import type L from "leaflet";
 
 interface MarkerData {
   position: [number, number];
@@ -24,7 +24,7 @@ const LazyMap = dynamic(() => import("./components/Map"), {
 });
 
 export default function Home() {
-  const [marker, setMarker] = useState<MarkerData | null>(null);
+  const [marker, setMarker] = useState<MarkerData>();
   const [nearbyFiresides, setNearbyFiresides] = useState<NearbyFireside[]>([]);
   const [focusPosition, setFocusPosition] = useState<[number, number]>();
 
@@ -36,8 +36,12 @@ export default function Home() {
     lon: number,
     displayName: string,
   ) => {
-    setMarker({ position: [lat, lon], displayName });
+    setMarker({ position: [lat, lon], displayName: displayName });
   };
+
+  useEffect(() => {
+    console.log(marker);
+  }, [marker]);
 
   const [mapStyle, setMapStyle] = useState<"satellite" | "roadmap">(
     "satellite",
@@ -47,6 +51,15 @@ export default function Home() {
     setFocusPosition([lat, lng]);
   };
 
+  function handleMarkerPositionChange(position: L.LatLng) {
+    if (marker) {
+      setMarker({
+        displayName: marker.displayName,
+        position: [position.lat, position.lng],
+      });
+    }
+  }
+
   return (
     <main className="flex min-h-screen flex-col">
       <Navbar />
@@ -54,6 +67,7 @@ export default function Home() {
         <div className="w-full flex-grow">
           <LazyMap
             marker={marker}
+            handleMarkerPositionChange={handleMarkerPositionChange}
             onNearbyFiresidesUpdate={setNearbyFiresides}
             focusPosition={focusPosition}
             mapStyle={mapStyle}

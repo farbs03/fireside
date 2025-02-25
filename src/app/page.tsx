@@ -47,7 +47,7 @@ export default async function Home() {
 
         {/* Hero Section */}
         <section className="relative">
-          <div className="container px-4 py-24 md:px-6">
+          <div className="container mx-auto px-4 py-24 md:px-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
@@ -91,7 +91,7 @@ export default async function Home() {
 
         {/* Features Section */}
         <section className="bg-muted/50">
-          <div className="container px-4 py-16 md:py-24">
+          <div className="container mx-auto px-4 py-16 md:py-24">
             <h2 className="mb-12 text-center text-3xl font-bold">
               Life-Saving Features
             </h2>
@@ -117,7 +117,7 @@ export default async function Home() {
 
         {/* CTA Section */}
         <section className="bg-red-600 text-white">
-          <div className="container px-4 py-16 md:py-24">
+          <div className="container mx-auto px-4 py-16 md:py-24">
             <div className="space-y-4 text-center">
               <h2 className="text-3xl font-bold">Need Immediate Assistance?</h2>
               <p className="mx-auto max-w-2xl text-red-100">
