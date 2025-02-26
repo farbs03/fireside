@@ -216,9 +216,9 @@ export default function Map({
       const getRoute = async () => {
         try {
           const response = await fetch(
-            `https://graphhopper.com/api/1/route?point=${fixedStart.lat},${fixedStart.lng}&point=${selectedEnd?.lat},${selectedEnd?.lng}&points_encoded=false&avoid=polygon:${firePolygon
+            `https://graphhopper.com/api/1/route?point=${fixedStart.lat},${fixedStart.lng}&point=${selectedEnd?.lat},${selectedEnd?.lng}&points_encoded=false&ch.disable=true&block_area=${firePolygon
               .map((coord) => coord.join(","))
-              .join(":")}&key=${process.env.NEXT_PUBLIC_GRAPHHOPPER_API_KEY}`,
+              .join(",")}&key=${process.env.NEXT_PUBLIC_GRAPHHOPPER_API_KEY}`,
           );
           if (!response.ok) throw new Error("Failed to fetch route");
           const data = (await response.json()) as GraphHopperResponse;
@@ -244,7 +244,7 @@ export default function Map({
           console.log(error);
         }
       };
-      getRoute();
+      void getRoute();
     }
   }, [selectedEnd]);
 
@@ -287,10 +287,15 @@ export default function Map({
 
       <MapContainer
         id="map"
-        center={defaultPosition}
+        center={marker ? marker.position : defaultPosition}
         zoom={13}
         className="h-full flex-grow"
       >
+        {focusPosition && (
+          <MapFocusHandler mapStyle={mapStyle} position={focusPosition} />
+        )}
+        {marker && <MapUpdater position={marker.position} />}
+        <MapController center={marker?.position ?? defaultPosition} />
         <TileLayer
           attribution={
             mapStyle === "satellite"
